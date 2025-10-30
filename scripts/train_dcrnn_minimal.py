@@ -56,6 +56,7 @@ class Config:
     # Data subset (use only portion of data for speed)
     USE_SENSORS = 50        # Use only first 50 sensors
     USE_DAYS = 7            # Use only first 7 days of data
+    # ~100k datapoints
     
     # Device
     DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -73,25 +74,25 @@ df = pd.read_csv(config.DATA_PATH)
 print(f"  - Original shape: {df.shape}")
 
 # Extract subset of data (first N sensors, first M days)
-num_timesteps_per_day = 288  # 5-minute intervals
-max_timesteps = config.USE_DAYS * num_timesteps_per_day
+num_timesteps_per_day = 288  # 5-minute intervals, 24 hr * 12 intervals/hr = 288 intervals/day
+max_timesteps = config.USE_DAYS * num_timesteps_per_day #max_timesteps = 7 days * 288 intervals/day = 2016 intervals
 df_subset = df.iloc[:max_timesteps, :config.USE_SENSORS + 1]  # +1 for timestamp column
 
 # Extract speed values (exclude timestamp)
 speed_values = df_subset.iloc[:, 1:].values  # Shape: (T, N)
-print(f"  - Subset shape: {speed_values.shape}")
+print(f"  - Subset shape: {speed_values.shape}") #Result: (2016, 50) array of speeds
 print(f"  - Using {config.USE_SENSORS} sensors, {config.USE_DAYS} days")
 
 
 # ============================================================================
-# 3. NORMALIZATION
+# 3. Z-SCORE NORMALIZATION (Standardization)
 # ============================================================================
 print("\n[STEP 2] Normalizing data (Z-score)...")
 
 # Z-score normalization
-mean = speed_values.mean()
-std = speed_values.std()
-speed_normalized = (speed_values - mean) / std
+mean = speed_values.mean() #avg speed across all datapoints
+std = speed_values.std() #std deviation (how spread out speeds are)
+speed_normalized = (speed_values - mean) / std #subtract mean to center data around 0, then divide by std which makes std dev = 1
 
 print(f"  - Mean: {mean:.2f} mph")
 print(f"  - Std: {std:.2f} mph")
@@ -115,36 +116,50 @@ def create_sequences(data, input_len, output_len):
         X: (num_samples, input_len, N) - input sequences
         Y: (num_samples, output_len, N) - target sequences
     """
-    T, N = data.shape
+
+    #Sliding window with input_len=12, output_len=12:
+    # Sample 1:
+        # Input: timesteps 0-11 (past hour)
+        # Output: timesteps 12-23 (next hour to predict)
+    # Sample 2:
+        # Input: timesteps 1-12 (shift by 1)
+        # Output: timesteps 13-24
+    # Sample 3:
+        # Input: timesteps 2-13
+        # Output: timesteps 14-25
+    # And so on...
+    T, N = data.shape # T=2016 timesteps, N=50 sensors
     X, Y = [], []
     
-    for i in range(T - input_len - output_len + 1):
-        X.append(data[i : i + input_len])
-        Y.append(data[i + input_len : i + input_len + output_len])
+    for i in range(T - input_len - output_len + 1): #1993 samples
+        X.append(data[i : i + input_len]) #Shape: (12, 50) = 12 timesteps × 50 sensors
+        Y.append(data[i + input_len : i + input_len + output_len]) #Shape: (12, 50)
     
     return np.array(X), np.array(Y)
+    #X shape: (1993, 12, 50) = 1993 samples, each is 12×50
+    #Y shape: (1993, 12, 50)
 
 X, Y = create_sequences(speed_normalized, config.INPUT_SEQ_LEN, config.OUTPUT_SEQ_LEN)
-print(f"  - X shape: {X.shape}")  # (num_samples, T_in, N)
-print(f"  - Y shape: {Y.shape}")  # (num_samples, T_out, N)
+print(f"  - X shape: {X.shape}")  # (num_samples, T_in, N) #Result: (1993, 12, 50)
+print(f"  - Y shape: {Y.shape}")  # (num_samples, T_out, N) #Result: (1993, 12, 50)
 
 
 # ============================================================================
 # 5. TRAIN/VAL/TEST SPLIT
 # ============================================================================
-print("\n[STEP 4] Splitting data (chronological)...")
+print("\n[STEP 4] Splitting data (chronological split, NOT random shuffle)...")
 
-num_samples = X.shape[0]
-train_end = int(0.6 * num_samples)
-val_end = int(0.8 * num_samples)
+num_samples = X.shape[0] #1993 samples
+train_end = int(0.6 * num_samples) #60% of data for training; 1193
+val_end = int(0.8 * num_samples) #20% of data for validation; 1594
 
 X_train, Y_train = X[:train_end], Y[:train_end]
 X_val, Y_val = X[train_end:val_end], Y[train_end:val_end]
 X_test, Y_test = X[val_end:], Y[val_end:]
 
-print(f"  - Train: {X_train.shape[0]} samples")
-print(f"  - Val: {X_val.shape[0]} samples")
-print(f"  - Test: {X_test.shape[0]} samples")
+print(f"  - Train: {X_train.shape[0]} samples") #Result: 1195
+print(f"  - Val: {X_val.shape[0]} samples") #Result: 399
+print(f"  - Test: {X_test.shape[0]} samples") #Result: 399
 
 
 # ============================================================================
@@ -152,14 +167,14 @@ print(f"  - Test: {X_test.shape[0]} samples")
 # ============================================================================
 class TrafficDataset(Dataset):
     """PyTorch Dataset for traffic speed sequences"""
-    def __init__(self, X, Y):
+    def __init__(self, X, Y): #convert numpy arrays to PyTorch tensors
         self.X = torch.FloatTensor(X)
         self.Y = torch.FloatTensor(Y)
     
     def __len__(self):
         return len(self.X)
     
-    def __getitem__(self, idx):
+    def __getitem__(self, idx): #return the i-th sample
         return self.X[idx], self.Y[idx]
 
 train_dataset = TrafficDataset(X_train, Y_train)
@@ -169,7 +184,10 @@ test_dataset = TrafficDataset(X_test, Y_test)
 train_loader = DataLoader(train_dataset, batch_size=config.BATCH_SIZE, shuffle=True)
 val_loader = DataLoader(val_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
 test_loader = DataLoader(test_dataset, batch_size=config.BATCH_SIZE, shuffle=False)
-
+# shuffle=True (train only):
+# Randomize order each epoch
+# Prevents model from memorizing sequence order
+# DON'T shuffle val/test (want consistent evaluation)
 
 # ============================================================================
 # 7. INITIALIZE MODEL
@@ -184,13 +202,20 @@ model = DCRNN(
 ).to(config.DEVICE)
 
 # Count parameters
+# p.numel() = number of elements in each parameter tensor
+# if p.requires_grad = only count trainable parameters
+
 num_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f"  - Model parameters: {num_params:,}")
 print(f"  - Device: {config.DEVICE}")
 
+# Expected output:
+# Probably around 10,000-50,000 parameters
+
 # Loss function and optimizer
-criterion = nn.MSELoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=config.LEARNING_RATE)
+criterion = nn.MSELoss() #Formula: (prediction - truth)²
+optimizer = torch.optim.Adam(model.parameters(), lr=config.LEARNING_RATE) #Adam Optimizer: Adjusts model weights to reduce loss
+#lr = 0.001: learning rate
 
 
 # ============================================================================
@@ -208,33 +233,46 @@ for epoch in range(config.NUM_EPOCHS):
     epoch_train_loss = 0.0
     
     for batch_X, batch_Y in train_loader:
-        batch_X = batch_X.to(config.DEVICE)  # (batch, T_in, N)
-        batch_Y = batch_Y.to(config.DEVICE)  # (batch, T_out, N)
+        batch_X = batch_X.to(config.DEVICE)  # (batch, T_in, N); batch_X: (4, 12, 50) = 4 samples, 12 timesteps, 50 sensors
+        batch_Y = batch_Y.to(config.DEVICE)  # (batch, T_out, N); batch_Y: (4, 12, 50) = targets for those 4 samples
         
         # Forward pass
+
+        # Clear gradients from previous batch
+        # Must do this EVERY batch
+        # Otherwise gradients accumulate incorrectly
+
         optimizer.zero_grad()
-        output = model(batch_X, T_out=config.OUTPUT_SEQ_LEN)  # (batch, T_out, N, 1)
+        output = model(batch_X, T_out=config.OUTPUT_SEQ_LEN)  # (batch, T_out, N, 1); Output shape: (4, 12, 50, 1)
         
         # Reshape for loss calculation
-        output = output.squeeze(-1)  # (batch, T_out, N)
-        
+        output = output.squeeze(-1)  # (batch, T_out, N); Remove last dimension (1); now matches the shape of batch_Y: (4, 12, 50)
+        #done because loss func expects same shapes
+
         # Calculate loss
-        loss = criterion(output, batch_Y)
+        loss = criterion(output, batch_Y) #mse
         
         # Backward pass
-        loss.backward()
-        optimizer.step()
-        
-        epoch_train_loss += loss.item()
+        loss.backward() #∂loss/∂weight for every weight
+        optimizer.step() #weight = weight - learning_rate × gradient
+
+        epoch_train_loss += loss.item() #loss.item():
+        # Get the loss value as a Python number
+        # Accumulate it for this epoch
     
-    avg_train_loss = epoch_train_loss / len(train_loader)
+    avg_train_loss = epoch_train_loss / len(train_loader) #Average loss across all batches
     train_losses.append(avg_train_loss)
     
     # Validation phase
     model.eval()
     epoch_val_loss = 0.0
     
-    with torch.no_grad():
+    with torch.no_grad(): #Disables gradient computation
+        # Same as training, but:
+            # NO optimizer.zero_grad()
+            # NO loss.backward(), no weights updated
+            # NO optimizer.step()
+        # Just forward pass and loss calculation
         for batch_X, batch_Y in val_loader:
             batch_X = batch_X.to(config.DEVICE)
             batch_Y = batch_Y.to(config.DEVICE)
@@ -251,6 +289,8 @@ for epoch in range(config.NUM_EPOCHS):
     # Print progress
     print(f"Epoch [{epoch+1:2d}/{config.NUM_EPOCHS}] | "
           f"Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f}")
+    
+    #If val loss increases while train decreases = overfitting
 
 print("="*70)
 print("Training completed!")
@@ -270,16 +310,22 @@ with torch.no_grad():
         batch_X = batch_X.to(config.DEVICE)
         
         output = model(batch_X, T_out=config.OUTPUT_SEQ_LEN)
-        output = output.squeeze(-1).cpu().numpy()
+        output = output.squeeze(-1).cpu().numpy() #cpu().numpy() = move to CPU and convert to numpy
         
         predictions.append(output)
         ground_truth.append(batch_Y.numpy())
 
-predictions = np.concatenate(predictions, axis=0)
+
+predictions = np.concatenate(predictions, axis=0) 
 ground_truth = np.concatenate(ground_truth, axis=0)
 
 # Calculate MAE (Mean Absolute Error) in original scale
-predictions_original = predictions * std + mean
+
+# DENORMALIZE predictions
+# Convert from normalized scale back to mph
+# Reverse the Z-score normalization
+predictions_original = predictions * std + mean #Formula: mean(|prediction - truth|)
+
 ground_truth_original = ground_truth * std + mean
 
 mae = np.mean(np.abs(predictions_original - ground_truth_original))
@@ -297,7 +343,7 @@ print("\n[STEP 8] Generating visualizations...")
 # Create docs folder if it doesn't exist
 os.makedirs('docs', exist_ok=True)
 
-# Visualization 1: Training and Validation Loss
+# Visualization 1: Training and Validation Loss Curve
 plt.figure(figsize=(10, 5))
 plt.plot(range(1, config.NUM_EPOCHS + 1), train_losses, marker='o', label='Train Loss', linewidth=2)
 plt.plot(range(1, config.NUM_EPOCHS + 1), val_losses, marker='s', label='Val Loss', linewidth=2)
@@ -312,6 +358,7 @@ print("  - Saved: docs/training_loss.png")
 
 # Visualization 2: Predictions vs Ground Truth (sample sensor, sample time)
 # Select a random test sample and a random sensor
+# Blue = truth, Orange = prediction
 sample_idx = np.random.randint(0, len(predictions))
 sensor_idx = np.random.randint(0, predictions.shape[2])
 
@@ -332,6 +379,10 @@ plt.savefig('docs/prediction_vs_truth.png', dpi=300, bbox_inches='tight')
 print("  - Saved: docs/prediction_vs_truth.png")
 
 # Visualization 3: Error Distribution
+# Histogram of all errors
+# Should be centered near 0
+# Shows most errors are small
+
 errors = (predictions_original - ground_truth_original).flatten()
 plt.figure(figsize=(10, 5))
 plt.hist(errors, bins=50, color='#2E86AB', alpha=0.7, edgecolor='black')
