@@ -1,0 +1,15 @@
+# Core dependencies for data handling and numerical operations
+# NumPy: Essential for array manipulation
+numpy>=1.22.0
+
+# Pandas: Essential for dataframes and general data structures
+pandas>=1.5.0
+
+# PyTorch: deep learning framework
+torch>=2.0.0
+
+# PyTorch Geometric (PyG) and related graph packages
+# If `pip install -r requirements.txt` fails for torch-geometric, follow
+# the official installation guide at https://pytorch-geometric.readthedocs.io
+# or use the prebuilt wheel links at https://data.pyg.org/whl/.
+torch-geometric>=2.3.0
