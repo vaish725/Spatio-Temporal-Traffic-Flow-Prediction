@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Spatio-Temporal Traffic Flow Prediction
 
 This repository contains code for a DCRNN-based spatio-temporal traffic forecasting project.
@@ -13,3 +14,7 @@ Structure:
 - docs/           # project documentation
 
 See `traffic_flow_setup.py` for the preprocessing pipeline and `models/dcrnn.py` for a model skeleton.
+=======
+# Spatio-Temporal-Traffic-Flow-Prediction
+Traffic Flow Forecasting using Diffusion Convolutional Recurrent Neural Networks (DCRNN)
+>>>>>>> f56549fde90e392046a80b287059fd6aa932403c
