@@ -1,3 +1,4 @@
+# Quick unit test to verify DCRNN model can perform forward pass without errors (no training)
 import torch
 from models.dcrnn import DCRNN
 

@@ -13,3 +13,18 @@ torch>=2.0.0
 # the official installation guide at https://pytorch-geometric.readthedocs.io
 # or use the prebuilt wheel links at https://data.pyg.org/whl/.
 torch-geometric>=2.3.0
+
+# Visualization libraries
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Progress bars for training loops
+tqdm>=4.65.0
+
+# For working with HDF5 files (optional, if using .h5 datasets)
+h5py>=3.8.0
+
+# Jupyter notebook support for data exploration
+jupyter>=1.0.0
+jupyterlab>=4.0.0
+ipykernel>=6.25.0

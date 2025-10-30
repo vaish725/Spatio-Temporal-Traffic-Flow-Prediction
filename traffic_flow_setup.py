@@ -1,4 +1,4 @@
-# traffic_flow_setup.py
+# Modular data preprocessing utilities: z-score normalization, sequence creation, train-val-test split, and transition matrix computation for future full-scale DCRNN implementation
 
 import numpy as np
 import pandas as pd
