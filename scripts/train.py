@@ -336,8 +336,7 @@ def train(args):
             optimizer, 
             mode='min', 
             factor=args.lr_decay_rate,
-            patience=args.lr_patience,
-            verbose=True
+            patience=args.lr_patience
         )
     
     # Training state
@@ -401,7 +400,11 @@ def train(args):
             
             # Learning rate scheduling
             if scheduler is not None:
+                old_lr = optimizer.param_groups[0]['lr']
                 scheduler.step(val_loss)
+                new_lr = optimizer.param_groups[0]['lr']
+                if new_lr < old_lr:
+                    print(f"  Learning rate reduced: {old_lr:.6f} -> {new_lr:.6f}")
             
             # Check for improvement
             if val_loss < best_val_loss - args.min_delta:
