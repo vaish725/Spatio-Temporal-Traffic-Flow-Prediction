@@ -67,6 +67,15 @@ def get_device(device_arg):
     """Get computation device"""
     if device_arg == 'auto':
         device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    elif device_arg == 'cpu':
+        # Force CPU even if CUDA is available
+        device = torch.device('cpu')
+    elif device_arg == 'cuda':
+        if not torch.cuda.is_available():
+            print("WARNING: CUDA requested but not available, falling back to CPU")
+            device = torch.device('cpu')
+        else:
+            device = torch.device('cuda')
     else:
         device = torch.device(device_arg)
     print(f"Using device: {device}")
