@@ -1,13 +1,15 @@
-# 🔴 CRITICAL BUG FIX: DCRNN Decoder Initialization
+# 🔴 CRITICAL BUG FIX: DCRNN Training - Teacher Forcing
 
 **Date:** November 27, 2025  
 **Issue:** Model predicting constants (MAE 7.99 mph) vs persistence baseline (MAE 2.18 mph)  
+**Root Cause:** Missing teacher forcing during training (implementation mismatch with original paper)  
 **Status:** ✅ **FIXED**
 
 ---
 
-## 🐛 The Bug
+## 🐛 The Bugs (2 Critical Issues)
 
+### Bug #1: Decoder Initialization (FIXED)
 **Location:** `models/dcrnn.py`, line 210 in `Decoder.forward()`
 
 **Broken Code:**
@@ -19,6 +21,20 @@ def forward(self, H, T_out, P_fwd=None, P_bwd=None):
 ```
 
 **Problem:** Decoder initialized autoregressive generation with **ALL ZEROS** instead of using the last encoder input.
+
+### Bug #2: Missing Teacher Forcing (NEWLY DISCOVERED - FIXED)
+**Location:** `models/dcrnn.py`, `Decoder.forward()` and training loop
+
+**Broken Code:**
+```python
+# Always uses model's own predictions during training
+for t in range(T_out):
+    out_t = self.proj(x_t, P_fwd, P_bwd)
+    outputs.append(out_t)
+    input_t = out_t  # ❌ BUG: Should use ground truth during training!
+```
+
+**Problem:** Implementation didn't match original DCRNN paper - was using pure autoregressive decoding during training instead of teacher forcing.
 
 ---
 

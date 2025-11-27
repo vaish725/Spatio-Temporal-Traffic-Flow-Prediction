@@ -202,9 +202,9 @@ def train_epoch(model, dataloader, optimizer, criterion, device, clip_grad, log_
         if P_bwd is not None:
             P_bwd = P_bwd[0].to(device)
         
-        # Forward pass
+        # Forward pass with teacher forcing
         optimizer.zero_grad()
-        pred = model(x, P_fwd=P_fwd, P_bwd=P_bwd, T_out=y.shape[1])
+        pred = model(x, P_fwd=P_fwd, P_bwd=P_bwd, T_out=y.shape[1], labels=y, training=True)
         
         # Compute loss
         loss = criterion(pred, y)
@@ -247,8 +247,8 @@ def validate(model, dataloader, criterion, device, mean, std):
             if P_bwd is not None:
                 P_bwd = P_bwd[0].to(device)
             
-            # Forward pass
-            pred = model(x, P_fwd=P_fwd, P_bwd=P_bwd, T_out=y.shape[1])
+            # Forward pass (inference mode - no teacher forcing)
+            pred = model(x, P_fwd=P_fwd, P_bwd=P_bwd, T_out=y.shape[1], training=False)
             
             # Loss
             loss = criterion(pred, y)

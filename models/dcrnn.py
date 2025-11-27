@@ -182,9 +182,9 @@ class Decoder(nn.Module):
         # Projection from hidden to output using diffusion convolution
         self.proj = DiffusionConv(hidden_dim, output_dim, max_diffusion_step)
 
-    def forward(self, H, T_out, P_fwd=None, P_bwd=None, last_input=None):
+    def forward(self, H, T_out, P_fwd=None, P_bwd=None, last_input=None, labels=None, training=False):
         """
-        Generate output sequence autoregressively.
+        Generate output sequence with optional teacher forcing.
         
         Args:
             H: List of hidden states [(batch, N, hidden_dim), ...]
@@ -192,6 +192,8 @@ class Decoder(nn.Module):
             P_fwd: (N, N) - Forward diffusion matrix
             P_bwd: (N, N) - Backward diffusion matrix
             last_input: (batch, N, output_dim) - Last encoder input (optional)
+            labels: (batch, T_out, N, output_dim) - Ground truth for teacher forcing (optional)
+            training: bool - If True and labels provided, use teacher forcing
             
         Returns:
             outputs: (batch, T_out, N, output_dim)
@@ -213,9 +215,14 @@ class Decoder(nn.Module):
                 x_t = H[i]
             out_t = self.proj(x_t, P_fwd, P_bwd)
             outputs.append(out_t)
-            # Autoregressive: use previous output as input
-            # Note: For training, can add teacher forcing option
-            input_t = out_t
+            
+            # Teacher forcing: use ground truth during training, predictions during inference
+            if training and labels is not None:
+                # Use ground truth as next input (teacher forcing)
+                input_t = labels[:, t, :, :]
+            else:
+                # Use model's prediction as next input (autoregressive)
+                input_t = out_t
 
         # Stack: (T_out, batch, N, output_dim) -> (batch, T_out, N, output_dim)
         outputs = torch.stack(outputs, dim=1)
@@ -257,7 +264,7 @@ class DCRNN(nn.Module):
             max_diffusion_step=max_diffusion_step
         )
 
-    def forward(self, X, P_fwd=None, P_bwd=None, T_out=12):
+    def forward(self, X, P_fwd=None, P_bwd=None, T_out=12, labels=None, training=False):
         """
         Forward pass: encode input sequence, decode to predictions.
         
@@ -266,6 +273,8 @@ class DCRNN(nn.Module):
             P_fwd: (N, N) - Forward transition matrix
             P_bwd: (N, N) - Backward transition matrix
             T_out: Number of output steps
+            labels: (batch, T_out, N, output_dim) - Ground truth for teacher forcing (optional)
+            training: bool - If True, use teacher forcing with labels
             
         Returns:
             predictions: (batch, T_out, N, output_dim)
@@ -279,6 +288,7 @@ class DCRNN(nn.Module):
         else:
             last_input = X[:, -1, :, :]  # (batch, N, input_dim)
         
-        # Decode with proper initialization
-        out = self.decoder(H, T_out=T_out, P_fwd=P_fwd, P_bwd=P_bwd, last_input=last_input)
+        # Decode with teacher forcing during training, autoregressive during inference
+        out = self.decoder(H, T_out=T_out, P_fwd=P_fwd, P_bwd=P_bwd, 
+                          last_input=last_input, labels=labels, training=training)
         return out
