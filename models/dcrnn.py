@@ -182,7 +182,7 @@ class Decoder(nn.Module):
         # Projection from hidden to output using diffusion convolution
         self.proj = DiffusionConv(hidden_dim, output_dim, max_diffusion_step)
 
-    def forward(self, H, T_out, P_fwd=None, P_bwd=None):
+    def forward(self, H, T_out, P_fwd=None, P_bwd=None, last_input=None):
         """
         Generate output sequence autoregressively.
         
@@ -191,6 +191,7 @@ class Decoder(nn.Module):
             T_out: Number of output steps to generate
             P_fwd: (N, N) - Forward diffusion matrix
             P_bwd: (N, N) - Backward diffusion matrix
+            last_input: (batch, N, output_dim) - Last encoder input (optional)
             
         Returns:
             outputs: (batch, T_out, N, output_dim)
@@ -198,7 +199,12 @@ class Decoder(nn.Module):
         # H: list of hidden states per layer [(batch, N, hidden_dim), ...]
         batch, N, _ = H[0].shape
         outputs = []
-        input_t = torch.zeros(batch, N, self.proj.out_features, device=H[0].device)
+        
+        # CRITICAL FIX: Initialize with last encoder input, not zeros
+        if last_input is not None:
+            input_t = last_input
+        else:
+            input_t = torch.zeros(batch, N, self.proj.out_features, device=H[0].device)
 
         for t in range(T_out):
             x_t = input_t
@@ -264,6 +270,15 @@ class DCRNN(nn.Module):
         Returns:
             predictions: (batch, T_out, N, output_dim)
         """
+        # Encode input sequence
         H = self.encoder(X, P_fwd=P_fwd, P_bwd=P_bwd)
-        out = self.decoder(H, T_out=T_out, P_fwd=P_fwd, P_bwd=P_bwd)
+        
+        # CRITICAL FIX: Pass last input timestep to decoder
+        if X.dim() == 3:
+            last_input = X[:, -1, :].unsqueeze(-1)  # (batch, N, 1)
+        else:
+            last_input = X[:, -1, :, :]  # (batch, N, input_dim)
+        
+        # Decode with proper initialization
+        out = self.decoder(H, T_out=T_out, P_fwd=P_fwd, P_bwd=P_bwd, last_input=last_input)
         return out
