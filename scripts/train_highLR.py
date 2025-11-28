@@ -1,12 +1,17 @@
 """
 QUICK FIX: Train with higher learning rate to escape local minimum
 """
+import sys
+import os
+
+# Add parent directory to path (in case we're in scripts/ folder)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 from torch.utils.data import DataLoader
-import os
 import json
 from tqdm import tqdm
 
