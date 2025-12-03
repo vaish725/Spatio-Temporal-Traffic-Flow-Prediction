@@ -2,7 +2,11 @@
 Memory-safe training for Colab CPU (prevents crashes)
 """
 import sys
-import os
+imprint("Training...")
+print("="*70)
+
+best_val_mae = float('inf')
+patience = 5  # Reduced for faster testingos
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
@@ -30,7 +34,12 @@ print("  • Cosine annealing")
 print("  • Aggressive garbage collection")
 print()
 
-device = torch.device('cpu')
+# Auto-detect GPU/CPU
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f"Device: {device}")
+if torch.cuda.is_available():
+    print(f"GPU: {torch.cuda.get_device_name(0)}")
+print()
 
 # Load data
 print("Loading data...")
@@ -83,7 +92,7 @@ history = {'epoch': [], 'train_loss': [], 'val_mae': [], 'lr': []}
 
 accumulation_steps = 4  # Accumulate 4 batches before update
 
-for epoch in range(50):
+for epoch in range(10):  # Reduced to 10 epochs for CPU testing
     # Training
     model.train()
     train_losses = []
