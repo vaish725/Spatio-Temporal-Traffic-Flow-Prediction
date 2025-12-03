@@ -1,12 +1,8 @@
 """
-Memory-safe training for Colab CPU (prevents crashes)
+Memory-safe training for Colab (auto-detects GPU/CPU)
 """
 import sys
-imprint("Training...")
-print("="*70)
-
-best_val_mae = float('inf')
-patience = 5  # Reduced for faster testingos
+import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
@@ -20,7 +16,6 @@ import gc
 
 from models.dcrnn import DCRNN
 from src.dataset import TrafficDataset
-from src.metrics import MetricsTracker
 
 
 print("="*70)
@@ -44,7 +39,7 @@ print()
 # Load data
 print("Loading data...")
 data = np.load('data/pems_bay_processed.npz')
-X_train = data['X_train'][:5000]  # Limit to 5K samples for safety
+X_train = data['X_train'][:5000]  # Limit to 5K samples
 y_train = data['y_train'][:5000]
 X_val = data['X_val'][:1000]  # Limit to 1K samples
 y_val = data['y_val'][:1000]
@@ -54,9 +49,9 @@ mean = float(data['mean'])
 std = float(data['std'])
 
 print(f"Train: {len(X_train)}, Val: {len(X_val)}")
-print("(Using subset to prevent memory crash)")
+print("(Using subset to prevent memory issues)")
 
-# Create dataloaders with small batch size
+# Create dataloaders
 train_dataset = TrafficDataset(X_train, y_train, P_fwd, P_bwd)
 val_dataset = TrafficDataset(X_val, y_val, P_fwd, P_bwd)
 
@@ -81,37 +76,37 @@ optimizer = optim.Adam(model.parameters(), lr=0.01, weight_decay=0)
 scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=50, eta_min=0.0001)
 criterion = nn.L1Loss()
 
-# Training loop with gradient accumulation
+# Training loop
 print("\nTraining...")
 print("="*70)
 
 best_val_mae = float('inf')
-patience = 15
+patience = 5
 patience_counter = 0
 history = {'epoch': [], 'train_loss': [], 'val_mae': [], 'lr': []}
 
-accumulation_steps = 4  # Accumulate 4 batches before update
+accumulation_steps = 4  # Accumulate 4 batches
 
-for epoch in range(10):  # Reduced to 10 epochs for CPU testing
+for epoch in range(10):  # 10 epochs
     # Training
     model.train()
     train_losses = []
     
     optimizer.zero_grad()
     
-    for i, batch in enumerate(tqdm(train_loader, desc=f"Epoch {epoch+1}/50")):
+    for i, batch in enumerate(tqdm(train_loader, desc=f"Epoch {epoch+1}/10")):
         x = batch['x'].to(device)
         y = batch['y'].to(device)
         P_fwd_b = batch['P_fwd'][0].to(device)
         P_bwd_b = batch['P_bwd'][0].to(device)
         
-        # Forward pass
+        # Forward
         pred = model(x, P_fwd=P_fwd_b, P_bwd=P_bwd_b, T_out=12, 
                     labels=y, training=True)
         loss = criterion(pred, y)
-        loss = loss / accumulation_steps  # Scale loss
+        loss = loss / accumulation_steps
         
-        # Backward pass
+        # Backward
         loss.backward()
         
         # Update every accumulation_steps
@@ -120,9 +115,7 @@ for epoch in range(10):  # Reduced to 10 epochs for CPU testing
             optimizer.step()
             optimizer.zero_grad()
             
-            # Aggressive memory cleanup
             del pred
-            torch.cuda.empty_cache() if torch.cuda.is_available() else None
             gc.collect()
         
         train_losses.append(loss.item() * accumulation_steps)
@@ -150,7 +143,6 @@ for epoch in range(10):  # Reduced to 10 epochs for CPU testing
             mae = torch.abs(pred - y).mean().item()
             val_maes.append(mae)
             
-            # Memory cleanup
             del pred
     
     val_mae = np.mean(val_maes)
@@ -166,7 +158,7 @@ for epoch in range(10):  # Reduced to 10 epochs for CPU testing
     history['val_mae'].append(val_mae_denorm)
     history['lr'].append(current_lr)
     
-    print(f"\nEpoch {epoch+1}/50:")
+    print(f"\nEpoch {epoch+1}/10:")
     print(f"  Train Loss: {train_loss:.4f}")
     print(f"  Val MAE: {val_mae_denorm:.3f} mph")
     print(f"  LR: {current_lr:.6f}")
@@ -190,12 +182,11 @@ for epoch in range(10):  # Reduced to 10 epochs for CPU testing
     else:
         patience_counter += 1
     
-    # Early stopping (but not before epoch 20)
-    if epoch >= 20 and patience_counter >= patience:
+    # Early stopping (but not before epoch 5)
+    if epoch >= 5 and patience_counter >= patience:
         print(f"\nEarly stopping at epoch {epoch+1}")
         break
     
-    # Memory cleanup
     gc.collect()
 
 print("\n" + "="*70)
