@@ -142,11 +142,15 @@ def load_model(checkpoint_path, model, device):
     if not os.path.exists(checkpoint_path):
         raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
     
-    checkpoint = torch.load(checkpoint_path, map_location=device)
+    checkpoint = torch.load(checkpoint_path, map_location=device, weights_only=False)
     model.load_state_dict(checkpoint['model_state_dict'])
     
     print(f"  Epoch: {checkpoint['epoch']}")
-    print(f"  Val Loss: {checkpoint['val_loss']:.4f}")
+    if 'val_loss' in checkpoint:
+        print(f"  Val Loss: {checkpoint['val_loss']:.4f}")
+    if 'val_mae' in checkpoint and 'std' in checkpoint:
+        val_mae_mph = checkpoint['val_mae'] * checkpoint['std']
+        print(f"  Val MAE: {val_mae_mph:.3f} mph")
     if 'metrics' in checkpoint:
         print(f"  Val MAE: {checkpoint['metrics']['mae']:.4f}")
     
