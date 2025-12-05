@@ -103,7 +103,7 @@ python scripts/train.py --data_path data/pems_bay_processed.npz --epochs 100
 
 ---
 
-## 🏗️ Repository Structure
+## Repository Structure
 
 ```
 ├── app.py                      # Interactive Streamlit dashboard (18KB)
@@ -184,7 +184,7 @@ python scripts/train.py --data_path data/pems_bay_processed.npz --epochs 100
 ```
 ---
 
-## 🎨 Interactive Dashboard Features
+## Interactive Dashboard Features
 
 ### Network Overview
 - **Interactive Map:** Visualize all 325 sensors with predictions
@@ -205,7 +205,7 @@ python scripts/train.py --data_path data/pems_bay_processed.npz --epochs 100
 
 ---
 
-## 📈 Dataset: PEMS-BAY
+## Dataset: PEMS-BAY
 
 ### Dataset Statistics
 
@@ -391,7 +391,7 @@ for epoch in range(100):
 
 ---
 
-## 📦 Requirements
+## Requirements
 
 ```
 Python >= 3.8
@@ -411,7 +411,7 @@ See `requirements.txt` for the complete dependency list.
 
 ---
 
-## 📚 Technical Details
+## Technical Details
 
 ### Graph Structure
 
@@ -493,7 +493,7 @@ Advanced Machine Learning (Fall 2025)
 
 ---
 
-## 📄 License
+## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
