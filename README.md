@@ -191,17 +191,26 @@ python scripts/train.py --data_path data/pems_bay_processed.npz --epochs 100
 - **Network Statistics:** Average speed, active sensors, prediction accuracy
 - **Time Series:** Historical and predicted traffic patterns across the network
 
+![Network Overview](docs/network_overview_dashboard.jpeg)
+*Figure: Network Overview dashboard displaying all 325 sensors with color-coded traffic conditions (green = free flow, yellow = moderate, red = congestion).*
+
 ### Sensor Details
 - **Individual Analysis:** Select any sensor for detailed inspection
 - **Multi-Horizon Predictions:** View forecasts from 5 to 60 minutes ahead
 - **Historical Context:** Compare predictions against actual traffic patterns
 - **Performance Metrics:** MAE, RMSE, MAPE for each sensor
 
+![Sensor Details](docs/sensor_details_dashboard.jpeg)
+*Figure: Sensor Details view showing historical speeds (blue), model predictions (orange), and ground truth (green) with detailed metrics and multi-horizon forecasts.*
+
 ### Comparison View
 - **Multi-Sensor Analysis:** Compare up to 4 sensors side-by-side
 - **Correlation Detection:** Identify spatial relationships between sensors
 - **Peak Hour Analysis:** Examine traffic patterns during rush hours
 - **Custom Time Ranges:** Filter data by date and time
+
+![Comparison View](docs/comparison_view_dashboard.jpeg)
+*Figure: Comparison View enabling simultaneous analysis of multiple sensors to verify spatial correlations and traffic propagation patterns.*
 
 ---
 
@@ -236,6 +245,9 @@ python scripts/train.py --data_path data/pems_bay_processed.npz --epochs 100
 - **Spatial correlation:** Mean correlation 0.359, max 0.970 (neighbors), validating graph-based approach
 - **Sparse adjacency:** 97.45% sparsity, ~8.3 connections per sensor, efficient computation
 - **Node degree:** Mean 8, Median 8, Max 23 (hub sensors), Min 1 (isolated sensors)
+
+![Temporal Patterns](docs/temporal_patterns.png)
+*Figure: Temporal patterns in PEMS-BAY traffic data showing clear daily cycles with morning/evening rush hours and weekly patterns with weekend variations.*
 
 ---
 
@@ -315,6 +327,10 @@ Output Predictions (12 steps, 1 hour)
 The optimal 10K model shows:
 - Smooth convergence without overfitting
 - Val loss tracks train loss closely
+
+![Training Progress](checkpoints_colab/dcrnn_training_progress_optimal_10k.png)
+*Figure: Training and validation loss curves for the optimal 10K model showing stable convergence with minimal overfitting over 20 epochs.*
+
 ---
 
 ## Usage Examples
