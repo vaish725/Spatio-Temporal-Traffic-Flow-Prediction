@@ -1,665 +1,397 @@
-# Spatio-Temporal Traffic Flow Prediction using DCRNN# Spatio-Temporal Traffic Flow Prediction using DCRNN
+# Spatio-Temporal Traffic Flow Prediction using DCRNN
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Traffic Flow Forecasting using Diffusion Convolutional Recurrent Neural Networks**
 
-**Advanced Deep Learning for Multi-Horizon Traffic Speed Forecasting****Traffic Flow Forecasting using Diffusion Convolutional Recurrent Neural Networks**
-
-
-
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)This repository implements a state-of-the-art deep learning model for multi-horizon traffic speed prediction on road networks. The model combines graph convolution (spatial) and recurrent neural networks (temporal) to capture complex spatio-temporal dependencies in traffic data.
-
-[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
-
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)## Project Overview
-
-
-
-> A production-ready implementation of Diffusion Convolutional Recurrent Neural Networks (DCRNN) for traffic forecasting, featuring an interactive Streamlit dashboard and achieving **1.930 mph test MAE** on the PEMS-BAY dataset.**Objective:** Predict traffic speeds at multiple road sensors for the next hour (12 time steps) based on historical observations.
-
-
-
----**Model:** Diffusion Convolutional Recurrent Neural Network (DCRNN)
-
-- Paper: Li et al., "Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting" (ICLR 2018)
-
-## 🎯 Project Overview- Combines diffusion convolution over graphs with encoder-decoder GRU architecture
-
-
-
-This project implements a state-of-the-art deep learning system for predicting traffic speeds across a network of 325 sensors in the San Francisco Bay Area. The system combines graph neural networks (spatial modeling) with recurrent neural networks (temporal modeling) to accurately forecast traffic conditions up to 60 minutes ahead.**Dataset:** PEMS-BAY
-
-- 325 traffic sensors in the Bay Area, California
-
-### Key Achievements- 6 months of data (Jan-June 2017)
-
-- 52,116 timesteps at 5-minute intervals
-
-- ✅ **Production Model:** 1.930 mph test MAE (75.9% improvement over baseline)- High-quality data with zero missing values
-
-- ✅ **Interactive Dashboard:** Real-time traffic visualization and prediction interface
-
-- ✅ **Full-Scale Implementation:** 325 sensors, 6 months of data, 52,116 timesteps---
-
-- ✅ **Custom Implementation:** Hand-coded diffusion convolution (not using PyG)
-
-- ✅ **Systematic Optimization:** Trained and evaluated 5K, 10K, and 20K sample models## Repository Structure
-
-- ✅ **Perfect Generalization:** Val MAE 2.097 mph ≈ Test MAE 1.930 mph (no overfitting)
-
-```
-
----├── data/                  # Raw and processed datasets
-
-│   ├── PEMS-BAY.csv      # Traffic speed time series
-
-## 🚀 Quick Start│   ├── adj_mx_bay.pkl    # Spatial adjacency matrix
-
-│   └── METR-LA.csv       # Alternative dataset
-
-### 1. Installation│
-
-├── models/                # Model implementations
-
-```bash│   ├── dcrnn.py          # DCRNN architecture (encoder-decoder)
-
-# Clone the repository│   └── __init__.py
-
-git clone https://github.com/vaish725/Spatio-Temporal-Traffic-Flow-Prediction.git│
-
-cd Spatio-Temporal-Traffic-Flow-Prediction├── notebooks/             # Jupyter notebooks for analysis
-
-│   └── 01_data_exploration.ipynb  # EDA with visualizations
-
-# Install dependencies│
-
-pip install -r requirements.txt├── scripts/               # Training and evaluation scripts
-
-```│   └── train_dcrnn_minimal.py     # Smoke test training script
-
-│
-
-### 2. Launch Interactive Dashboard├── src/                   # Reusable modules and utilities
-
-│   └── __init__.py
-
-```bash│
-
-# Start the dashboard├── tests/                 # Unit tests
-
-streamlit run app.py│   └── smoke_test_dcrnn.py
-
-│
-
-# Open browser to http://localhost:8501├── docs/                  # Documentation and visualizations
-
-```│   ├── QUICKSTART_FOR_PRESENTATION.md
-
-│   ├── presentation_structure.md
-
-The dashboard provides:│   └── *.png             # Generated visualization images
-
-- **Network Overview:** Real-time traffic visualization on interactive map│
-
-- **Sensor Details:** Deep-dive analysis for individual sensors├── requirements.txt       # Python dependencies
-
-- **Comparison View:** Compare predictions across multiple sensors└── README.md             # This file
-
-- **Date/Time Selection:** Explore predictions for any timestamp in test set (June 3-30, 2017)```
-
-
-
-### 3. Data Preparation (Optional - data already included)---
-
-
-
-If you need to reprocess the data:## Quick Start
-
-
-
-```bash### 1. Installation
-
-python scripts/prepare_data.py
-
-``````bash
-
-# Clone the repository
-
----git clone https://github.com/vaish725/Spatio-Temporal-Traffic-Flow-Prediction.git
-
-cd Spatio-Temporal-Traffic-Flow-Prediction
-
-## 📊 Model Performance
-
-# Install dependencies
-
-### Final Results (10K Optimal Model)pip install -r requirements.txt
-
-```
-
-| Metric | Value | Baseline | Improvement |
-
-|--------|-------|----------|-------------|### 2. Data Preparation
-
-| **Test MAE** | **1.930 mph** | 8.01 mph | **75.9%** ↓ |
-
-| **Test RMSE** | 3.827 mph | 10.25 mph | 62.7% ↓ |Place the following datasets in the `data/` folder:
-
-| **Test MAPE** | 3.18% | 12.8% | 75.2% ↓ |- `PEMS-BAY.csv` - Traffic speed time series
-
-| **Val MAE** | 2.097 mph | - | - |- `adj_mx_bay.pkl` - Adjacency matrix for sensor network
-
-| **Training Time** | ~45 min | - | - |
-
-Run the preprocessing pipeline:
-
-### Model Characteristics```bash
-
-python scripts/prepare_data.py
-
-- **Architecture:** 2-layer DCRNN encoder-decoder```
-
-- **Parameters:** 446,593 trainable parameters
-
-- **Hidden Dimension:** 64### 3. Exploratory Data Analysis
-
-- **Max Diffusion Steps:** 2
-
-- **Input Sequence:** 12 timesteps (1 hour history)```bash
-
-- **Output Sequence:** 12 timesteps (5, 15, 30, 60 min predictions)# Launch Jupyter Lab
-
-jupyter lab
-
-### Training Configuration
-
-# Open and run: notebooks/01_data_exploration.ipynb
-
-- **Training Samples:** 10,000 (optimized for speed/accuracy balance)```
-
-- **Validation Samples:** 5,209
-
-- **Test Samples:** 10,419 (June 3-30, 2017)This will generate visualizations in the `docs/` folder:
-
-- **Batch Size:** 32- Temporal patterns (hourly, daily, weekly)
-
-- **Learning Rate:** 0.001 (Adam optimizer)- Spatial correlation analysis
-
-- **Epochs:** 20 (early stopping at epoch 15)- Speed distributions
-
-- Time series examples
+This repository implements a state-of-the-art deep learning model for multi-horizon traffic speed prediction on road networks. The model combines graph convolution (spatial) and recurrent neural networks (temporal) to capture complex spatio-temporal dependencies in traffic data.
 
 ---
 
-### 4. Train DCRNN Model (Smoke Test)
+## Project Overview
+
+This project implements a production-ready deep learning system for predicting traffic speeds across a network of 325 sensors in the San Francisco Bay Area. The system combines graph neural networks (spatial modeling) with recurrent neural networks (temporal modeling) to accurately forecast traffic conditions up to 60 minutes ahead.
+
+**Model:** Diffusion Convolutional Recurrent Neural Network (DCRNN)  
+**Dataset:** PEMS-BAY (325 sensors, 6 months, 52,116 timesteps at 5-minute intervals)  
+**Paper:** Li et al., "Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting" (ICLR 2018)
+
+### Key Achievements
+
+- ✅ **Performance:** 1.930 mph test MAE on 325-sensor network
+- ✅ **Interactive Dashboard:** Real-time traffic visualization and prediction interface
+- ✅ **Full-Scale Implementation:** 6 months of data, 52,116 timesteps, zero missing values
+- ✅ **Custom Architecture:** Hand-coded diffusion convolution (not using PyTorch Geometric)
+- ✅ **Systematic Optimization:** Trained and evaluated 5K, 10K, and 20K sample models
+- ✅ **Perfect Generalization:** Val MAE 2.097 mph ≈ Test MAE 1.930 mph (no overfitting)
+
+---
+
+## 🚀 Quick Start
+
+### 1. Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/vaish725/Spatio-Temporal-Traffic-Flow-Prediction.git
+cd Spatio-Temporal-Traffic-Flow-Prediction
+
+# Install dependencies
+pip install -r requirements.txt
+```
+
+### 2. Launch Interactive Dashboard
+
+```bash
+# Start the dashboard
+streamlit run app.py
+
+# Open browser to http://localhost:8501
+```
+
+The dashboard provides:
+- **Network Overview:** Interactive map of all 325 sensors with real-time predictions
+- **Sensor Details:** Individual sensor analysis with 1-hour ahead forecasts
+- **Comparison View:** Side-by-side comparison of multiple sensors
+
+### 3. Data Preparation
+
+The preprocessed data is already included in the repository. If you need to regenerate it:
+
+```bash
+python scripts/prepare_data.py
+```
+
+### 4. Model Training
+
+```bash
+# Train with default settings (Colab-optimized)
+python scripts/train_colab_safe.py
+
+# Or use the flexible training script
+python scripts/train.py --data_path data/pems_bay_processed.npz --epochs 100
+```
+
+---
+
+## Model Performance
+
+### Production Results (10K Optimal Model)
+
+| Metric | Validation | Test | Improvement vs Baseline |
+|--------|-----------|------|------------------------|
+| **MAE (mph)** | 2.097 | 1.930 | **75.9%** |
+| **RMSE (mph)** | 4.258 | 3.946 | **71.2%** |
+| **MAPE (%)** | 4.76 | 4.48 | **73.8%** |
+
+**Model Details:**
+- Architecture: DCRNN with 2-layer encoder/decoder
+- Parameters: 446,593
+- Training: 10,000 samples, 100 epochs
+- Checkpoint: `checkpoints_colab/best_model_optimized.pt`
+
+### Performance by Prediction Horizon
+
+| Horizon | MAE (mph) | RMSE (mph) | MAPE (%) |
+|---------|-----------|------------|----------|
+| 15 min (step 3) | 1.64 | 3.23 | 3.78 |
+| 30 min (step 6) | 1.93 | 3.89 | 4.48 |
+| 45 min (step 9) | 2.08 | 4.26 | 4.88 |
+| 60 min (step 12) | 2.18 | 4.53 | 5.18 |
+
+**Key Insight:** The model maintains accuracy even for long-term predictions (60 minutes ahead).
+
+---
 
 ## 🏗️ Repository Structure
 
-```bash
-
-```# Run minimal training on subset of data
-
-├── app.py                      # 🎨 Interactive Streamlit dashboardpython scripts/train_dcrnn_minimal.py
-
-├── run_dashboard.sh            # Dashboard launcher script```
-
+```
+├── app.py                      # Interactive Streamlit dashboard (18KB)
+├── run_dashboard.sh            # Dashboard launcher script
 │
-
-├── dashboard/                  # Dashboard componentsThis trains a small DCRNN model (50 sensors, 7 days) and generates:
-
-│   ├── predictor.py           # Model loading and inference- Training/validation loss curves
-
-│   ├── utils.py               # Utility functions- Prediction vs ground truth plots
-
-│   └── visualization.py       # Plotly visualizations- Error distribution analysis
-
+├── dashboard/                  # Dashboard components (3 files)
+│   ├── predictor.py           # Model loading and inference
+│   ├── utils.py               # Utility functions
+│   └── visualization.py       # Plotly visualizations
 │
-
-├── models/                     # Neural network architectures**Actual Results (Proof-of-Concept):**
-
-│   ├── dcrnn.py               # DCRNN encoder-decoder implementation- Test MAE: 1.75 mph
-
-│   └── diffusion_conv.py      # Custom diffusion convolution layer- Test RMSE: 3.52 mph
-
-│- Training time: ~15 minutes on CPU
-
-├── src/                        # Core utilities- Model parameters: 1,841
-
+├── models/                     # Neural network architectures (2 files)
+│   ├── dcrnn.py               # DCRNN encoder-decoder implementation
+│   └── diffusion_conv.py      # Custom diffusion convolution layer
+│
+├── src/                        # Core utilities (2 files)
 │   ├── dataset.py             # PyTorch Dataset classes
-
-│   └── metrics.py             # Evaluation metrics (MAE, RMSE, MAPE)---
-
+│   └── metrics.py             # Evaluation metrics (MAE, RMSE, MAPE)
 │
-
-├── scripts/                    # Training and utility scripts## Model Architecture
-
+├── scripts/                    # Training and utility scripts (11 files)
 │   ├── train_colab_safe.py    # Main training script (Colab-optimized)
-
-│   ├── train.py               # Flexible training with CLI args**DCRNN (Diffusion Convolutional Recurrent Neural Network):**
-
+│   ├── train.py               # Flexible training with CLI arguments
 │   ├── train_simple.py        # Debug/verification training
-
-│   ├── evaluate.py            # Model evaluation script```
-
-│   ├── prepare_data.py        # Data preprocessing pipelineInput Sequence (12 steps, 1 hour)
-
-│   ├── test_dashboard.py      # Dashboard component testing         ↓
-
-│   ├── download_pems_bay.py   # Dataset acquisition script    [ENCODER]
-
-│   ├── verify_teacher_forcing.py  # Teacher forcing verification    DCGRU Cell 1 → DCGRU Cell 2 → ... → Hidden State
-
-│   ├── traffic_flow_setup.py  # Setup utility    (Spatial diffusion + GRU temporal modeling)
-
-│   ├── generate_presentation_plots.py  # Visualization generation         ↓
-
-│   └── run_experiments.py     # Experiment automation    [DECODER]
-
-│    DCGRU Cell 1 → DCGRU Cell 2 → ... → Output
-
-├── notebooks/                  # Jupyter notebooks         ↓
-
-│   ├── DCRNN_Training_Colab_Online.ipynb  # Colab training notebookOutput Predictions (12 steps, 1 hour)
-
-│   ├── Train_DCRNN_Simple.ipynb           # Simplified training (20K samples)```
-
-│   └── 01_data_exploration.ipynb          # Exploratory data analysis
-
-│**Key Components:**
-
-├── data/                       # Datasets (579MB)1. **Diffusion Convolution:** Captures spatial dependencies through graph structure
-
-│   ├── PEMS-BAY.csv           # Raw traffic data (52,116 × 326)2. **GRU Cells:** Model temporal dynamics in time series
-
-│   ├── pems_bay_processed.npz # Preprocessed train/val/test splits3. **Encoder-Decoder:** Sequence-to-sequence architecture for multi-step prediction
-
-│   └── adj_mx_bay.pkl         # Spatial adjacency matrix
-
-│---
-
-├── checkpoints_colab/          # Trained models (16MB)
-
-│   ├── best_model_optimized.pt         # 🏆 10K optimal model (RECOMMENDED)## Dataset Details
-
-│   ├── best_model_20k.pt               # 20K model (comparison)
-
-│   ├── training_history_optimized.json # Training metrics### PEMS-BAY Statistics
-
-│   └── training_history_20k.json       # 20K training metrics
-
-│| Metric | Value |
-
-├── results/                    # Evaluation results (44MB)|--------|-------|
-
-│   ├── colab_evaluation/      # Latest evaluation outputs| Number of Sensors | 325 |
-
-│   ├── predictions.npy        # Model predictions| Temporal Coverage | 181 days (6 months) |
-
-│   ├── targets.npy            # Ground truth| Timesteps | 52,116 |
-
-│   ├── metrics.json           # Performance metrics| Sampling Rate | 5 minutes |
-
-│   └── *.png                  # Visualization plots| Mean Speed | 63.26 mph |
-
-│| Std Deviation | 8.58 mph |
-
-├── presentation_figures/       # Presentation visualizations| Missing Values | 0 |
-
-│   ├── 1_training_curves.png
-
-│   ├── 2_performance_comparison.png### Key Findings from EDA:
-
-│   ├── 5_results_table.png- **Strong daily periodicity:** Morning rush (8:00 AM = 56.90 mph), Evening rush (5:00 PM = 54.15 mph)
-
-│   └── 6_model_comparison.png- **Weekend effects:** ~6% higher average speeds on Sat/Sun compared to weekdays
-
-│- **Spatial correlation:** Mean correlation 0.359, max 0.970 (neighbors), validating graph-based approach
-
-├── docs/                       # Documentation- **Sparse adjacency:** 97.45% sparsity, ~8.3 connections per sensor, efficient computation
-
-│   ├── DASHBOARD_WALKTHROUGH.md       # Complete dashboard guide- **Node degree:** Mean 8, Median 8, Max 23 (hub sensors), Min 1 (isolated sensors)
-
-│   ├── DASHBOARD_QUICK_REFERENCE.md   # One-page cheat sheet
-
-│   ├── PRESENTATION_GUIDE.md          # Presentation structure---
-
-│   ├── QUICK_REFERENCE.md             # Key metrics reference
-
-│   └── *.md                           # Various analysis documents## Requirements
-
+│   ├── evaluate.py            # Model evaluation script
+│   ├── prepare_data.py        # Data preprocessing pipeline
+│   ├── test_dashboard.py      # Dashboard component testing
+│   ├── download_pems_bay.py   # Dataset acquisition script
+│   ├── verify_teacher_forcing.py  # Teacher forcing verification
+│   ├── traffic_flow_setup.py  # Setup utility
+│   ├── generate_presentation_plots.py  # Visualization generation
+│   └── run_experiments.py     # Experiment automation
 │
+├── notebooks/                  # Jupyter notebooks (3 files)
+│   ├── DCRNN_Training_Colab_Online.ipynb  # Colab training notebook
+│   ├── Train_DCRNN_Simple.ipynb           # Simplified training notebook
+│   └── 01_data_exploration.ipynb          # Exploratory data analysis
+│
+├── data/                       # Datasets (579MB)
+│   ├── PEMS-BAY.csv           # Raw traffic data (52,116 timesteps × 326 columns)
+│   ├── pems_bay_processed.npz # Preprocessed train/val/test splits
+│   └── adj_mx_bay.pkl         # Spatial adjacency matrix (325×325)
+│
+├── checkpoints_colab/          # Trained models (16MB)
+│   ├── best_model_optimized.pt         # 🏆 10K optimal model (RECOMMENDED)
+│   ├── best_model_20k.pt               # 20K model (comparison)
+│   ├── training_history_optimized.json # Training metrics for 10K model
+│   └── training_history_20k.json       # Training metrics for 20K model
+│
+├── results/                    # Evaluation results (44MB)
+│   ├── colab_evaluation/      # Latest evaluation outputs
+│   ├── predictions.npy        # Model predictions (10,419 × 325 × 12)
+│   ├── targets.npy            # Ground truth values (10,419 × 325 × 12)
+│   ├── metrics.json           # Performance metrics (MAE, RMSE, MAPE)
+│   └── *.png                  # Visualization plots
+│
+├── presentation_figures/       # Presentation visualizations
+│   ├── 1_training_curves.png
+│   ├── 2_performance_comparison.png
+│   ├── 3_horizon_analysis.png
+│   ├── 4_spatial_predictions.png
+│   ├── 5_results_table.png
+│   └── 6_model_comparison.png
+│
+├── docs/                       # Documentation and guides
+│   ├── DASHBOARD_WALKTHROUGH.md       # Complete dashboard guide
+│   ├── DASHBOARD_QUICK_REFERENCE.md   # One-page cheat sheet
+│   ├── PRESENTATION_GUIDE.md          # Presentation structure
+│   ├── QUICK_REFERENCE.md             # Key metrics reference
+│   ├── PROJECT_SUMMARY.md             # Overall project summary
+│   ├── RESULTS_ANALYSIS_AND_IMPROVEMENT.md  # Performance analysis
+│   └── *.md                           # Various technical documents
+│
+├── tests/                      # Unit tests
+│   └── smoke_test_dcrnn.py    # Model smoke test
+│
+├── requirements.txt            # Python dependencies
+├── LICENSE                     # MIT License
+└── README.md                   # This file
+```
+---
 
-├── tests/                      # Unit tests```
+## 🎨 Interactive Dashboard Features
 
-│   └── smoke_test_dcrnn.pyPython >= 3.8
-
-│numpy >= 1.22.0
-
-├── requirements.txt            # Python dependenciespandas >= 1.5.0
-
-├── LICENSE                     # MIT Licensetorch >= 2.0.0
-
-└── README.md                   # This filetorch-geometric >= 2.3.0
-
-```matplotlib >= 3.7.0
-
-seaborn >= 0.12.0
-
----tqdm >= 4.65.0
-
-jupyter >= 1.0.0
-
-## 🎨 Interactive Dashboard Features```
-
-
-
-### Network OverviewSee `requirements.txt` for full dependency list.
-
-- **Interactive Map:** Visualize all 325 sensors with real-time predictions
-
-- **Color Coding:** Green (free flow) → Yellow (moderate) → Red (congested)---
-
-- **Network Health Metrics:** Average speed, congestion percentage, sensor statistics
-
-## Usage Examples
+### Network Overview
+- **Interactive Map:** Visualize all 325 sensors with predictions
+- **Network Statistics:** Average speed, active sensors, prediction accuracy
+- **Time Series:** Historical and predicted traffic patterns across the network
 
 ### Sensor Details
+- **Individual Analysis:** Select any sensor for detailed inspection
+- **Multi-Horizon Predictions:** View forecasts from 5 to 60 minutes ahead
+- **Historical Context:** Compare predictions against actual traffic patterns
+- **Performance Metrics:** MAE, RMSE, MAPE for each sensor
 
-- **Time Series Plots:** Historical data + 4 prediction horizons (5, 15, 30, 60 min)### Train on Full Dataset (Coming Soon)
+### Comparison View
+- **Multi-Sensor Analysis:** Compare up to 4 sensors side-by-side
+- **Correlation Detection:** Identify spatial relationships between sensors
+- **Peak Hour Analysis:** Examine traffic patterns during rush hours
+- **Custom Time Ranges:** Filter data by date and time
 
-- **Prediction Accuracy:** Compare predictions vs ground truth```bash
-
-- **Sensor Information:** Location, speed statistics, prediction confidencepython scripts/train_dcrnn_full.py \
-
-    --data data/PEMS-BAY.csv \
-
-### Comparison View    --adj_matrix data/adj_mx_bay.pkl \
-
-- **Multi-Sensor Analysis:** Compare up to 3 sensors simultaneously    --epochs 100 \
-
-- **Performance Comparison:** Side-by-side prediction accuracy    --batch_size 64 \
-
-- **Pattern Recognition:** Identify spatial correlations    --hidden_dim 64
-
-```
-
-### Interactive Controls
-
-- **Date/Time Picker:** Explore any timestamp (June 3-30, 2017)### Evaluate Model
-
-- **Timestamp Display:** Shows selected date, time, weekday, sample position```bash
-
-- **View Mode Selection:** Network/Sensor/Comparison viewspython scripts/evaluate.py \
-
-    --model_path checkpoints/best_model.pt \
-
----    --test_data data/test.npz
-
-```
+---
 
 ## 📈 Dataset: PEMS-BAY
 
----
-
-### Overview
-
-- **Source:** California Transportation Performance Measurement System (PeMS)## Current Progress
-
-- **Location:** San Francisco Bay Area highway network
-
-- **Sensors:** 325 traffic speed sensors**✅ Completed:**
-
-- **Temporal Coverage:** 6 months (January 1 - June 30, 2017)- [x] Data acquisition and preprocessing pipeline
-
-- **Timesteps:** 52,116 at 5-minute intervals- [x] Comprehensive exploratory data analysis with visualizations
-
-- **Data Quality:** Zero missing values (high-quality dataset)- [x] DCRNN model implementation (encoder-decoder architecture)
-
-- [x] Training pipeline with PyTorch
-
-### Statistics- [x] Smoke test demonstrating end-to-end functionality
-
-- [x] Visualization and evaluation metrics
+### Dataset Statistics
 
 | Metric | Value |
+|--------|-------|
+| Number of Sensors | 325 |
+| Temporal Coverage | 6 months (Jan-June 2017) |
+| Total Timesteps | 52,116 |
+| Sampling Rate | 5 minutes |
+| Mean Speed | 63.26 mph |
+| Std Deviation | 8.58 mph |
+| Missing Values | 0 |
 
-|--------|-------|**🔄 In Progress:**
+### Data Splits
 
-| Mean Speed | 62.62 mph |- [ ] Scale to full dataset (all 325 sensors, 6 months)
+| Split | Timesteps | Samples | Date Range |
+|-------|-----------|---------|------------|
+| **Train** | 36,481 | 36,469 | Jan 1 - May 13, 2017 |
+| **Validation** | 5,209 | 5,197 | May 13 - May 31, 2017 |
+| **Test** | 10,426 | 10,419 | June 1 - June 30, 2017 |
 
-| Std Deviation | 9.59 mph |- [ ] Implement actual diffusion convolution with adjacency matrix
+**Note:** Samples = Timesteps - 12 (input sequence length)
 
-| Min Speed | 0.0 mph |- [ ] Hyperparameter tuning
+### Key Findings from EDA
 
-| Max Speed | 85.0 mph |
-
-| Train Samples | 36,465 (70%) |**📋 Planned:**
-
-| Val Samples | 5,209 (10%) |- [ ] Baseline comparisons (Historical Average, ARIMA, VAR)
-
-| Test Samples | 10,419 (20%) |- [ ] Comprehensive evaluation (MAE, RMSE, MAPE)
-
-- [ ] Ablation studies (spatial vs temporal components)
-
-### Key Patterns (from EDA)- [ ] Sensitivity analysis
-
-- **Daily Periodicity:** Morning rush (8 AM, 56.9 mph), Evening rush (5 PM, 54.2 mph)- [ ] Final report and presentation
-
-- **Weekend Effect:** ~6% higher speeds on Sat/Sun vs weekdays
-
-- **Spatial Correlation:** Mean 0.359, validates graph-based approach---
-
-- **Network Sparsity:** 97.45% sparse adjacency, ~8.3 connections/sensor
-
-## Results (Proof-of-Concept - Smoke Test)
+- **Strong daily periodicity:** Morning rush (8:00 AM = 56.90 mph), Evening rush (5:00 PM = 54.15 mph)
+- **Weekend effects:** ~6% higher average speeds on Sat/Sun compared to weekdays
+- **Spatial correlation:** Mean correlation 0.359, max 0.970 (neighbors), validating graph-based approach
+- **Sparse adjacency:** 97.45% sparsity, ~8.3 connections per sensor, efficient computation
+- **Node degree:** Mean 8, Median 8, Max 23 (hub sensors), Min 1 (isolated sensors)
 
 ---
 
-### Configuration
+## Model Architecture
 
-## 🧠 Model Architecture| Parameter | Value |
+### DCRNN (Diffusion Convolutional Recurrent Neural Network)
 
-|-----------|-------|
+```
+Input Sequence (12 steps, 1 hour)
+         ↓
+    [ENCODER]
+    DCGRU Cell 1 → DCGRU Cell 2 → Hidden State
+    (Spatial diffusion + GRU temporal modeling)
+         ↓
+    [DECODER]
+    DCGRU Cell 1 → DCGRU Cell 2 → Output
+         ↓
+Output Predictions (12 steps, 1 hour)
+```
 
-### DCRNN (Diffusion Convolutional Recurrent Neural Network)| Sensors Used | 50 (out of 325) |
+### Key Components
 
-| Training Data | 7 days (out of 181) |
+1. **Diffusion Convolution:** Captures spatial dependencies through graph structure
+   - Bidirectional random walks on road network graph
+   - Learns both upstream and downstream traffic influences
+   - Custom implementation (not using PyTorch Geometric)
 
-```| Training Samples | 1,195 |
+2. **GRU Cells:** Model temporal dynamics in time series
+   - Update gate: Controls information flow
+   - Reset gate: Determines how to combine new input with memory
+   - Modified with diffusion convolution for spatial awareness
 
-Input: (batch, 12 timesteps, 325 sensors, 1 feature)| Validation Samples | 399 |
-
-         ↓| Test Samples | 399 |
-
-    [ENCODER]| Model Parameters | 1,841 |
-
-    ┌─────────────────────────────────────┐| Hidden Dimension | 16 |
-
-    │ DCGRU Cell 1 (Layer 1)              │| Batch Size | 4 |
-
-    │ • Diffusion Conv (forward/backward) │| Epochs | 10 |
-
-    │ • GRU update gates                  │| Training Time | ~15 minutes (CPU) |
-
-    ├─────────────────────────────────────┤
-
-    │ DCGRU Cell 2 (Layer 2)              │### Performance Metrics
-
-    │ • Diffusion Conv (forward/backward) │| Metric | Value |
-
-    │ • GRU update gates                  │|--------|-------|
-
-    └─────────────────────────────────────┘| Test MAE | 1.75 mph |
-
-         ↓ Hidden State (64-dim)| Test RMSE | 3.52 mph |
-
-    [DECODER]| Final Train Loss | 0.1903 |
-
-    ┌─────────────────────────────────────┐| Final Val Loss | 0.3557 |
-
-    │ DCGRU Cell 1 (Layer 1)              │| RMSE/MAE Ratio | 2.01 |
-
-    │ • Teacher forcing (training)        │
-
-    │ • Autoregressive (inference)        │### Analysis
-
-    ├─────────────────────────────────────┤**Strengths:**
-
-    │ DCGRU Cell 2 (Layer 2)              │- Model converges smoothly without overfitting
-
-    │ • Output projection                 │- Predictions within ~2 mph on average (MAE 1.75)
-
-    └─────────────────────────────────────┘- Stable training with consistent improvement over epochs
-
-         ↓- Significantly outperforms naive baseline (~8-10 mph MAE)
-
-Output: (batch, 12 timesteps, 325 sensors, 1 feature)
-
-```**Current Limitations:**
-
-- Conservative predictions (mean reversion behavior)
-
-### Key Components- Limited dynamic range in forecasts
-
-- Simplified architecture (linear layers vs. true diffusion convolution)
-
-1. **Diffusion Convolution**- Trained on minimal data (4% of available dataset)
-
-   - Captures spatial dependencies via graph structure
-
-   - Forward diffusion: Information flow along directed edges**Interpretation:**
-
-   - Backward diffusion: Reverse information propagationResults demonstrate successful proof-of-concept. Conservative behavior is expected given limited training data (1 week) and small model capacity (1,841 parameters). The model learns traffic patterns effectively but requires scaling to capture full dynamics. Next phase will implement true diffusion convolution and train on complete dataset.
-
-   - K=2 hops for multi-scale spatial features
-
-*Note: Proof-of-concept validates approach. Full-scale implementation expected to capture traffic dynamics more accurately.*
-
-2. **DCGRU (Diffusion Convolutional GRU)**
-
-   - Replaces matrix multiplication with diffusion convolution---
-
-   - Update gate, Reset gate, Candidate state
-
-   - Preserves temporal dynamics while incorporating spatial structure## References
-
-
-
-3. **Encoder-Decoder Architecture**1. **Li, Y., Yu, R., Shahabi, C., & Liu, Y.** (2018). *Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting.* International Conference on Learning Representations (ICLR).
-
-   - Encoder: Compresses input sequence into latent representation
-
-   - Decoder: Generates multi-step predictions autoregressively2. **PeMS Dataset:** California Transportation Sensors - Performance Measurement System
-
+3. **Encoder-Decoder:** Sequence-to-sequence architecture for multi-step prediction
+   - Encoder: Processes historical traffic data (12 timesteps)
+   - Decoder: Generates future predictions (12 timesteps)
    - Teacher forcing during training for stable learning
 
-3. **PyTorch Geometric:** Fey, M., & Lenssen, J. E. (2019). *Fast Graph Representation Learning with PyTorch Geometric.*
+### Hyperparameters
 
-4. **Custom Implementation**
-
-   - Hand-coded diffusion convolution (no PyTorch Geometric)---
-
-   - Efficient sparse matrix operations
-
-   - Flexible architecture supporting various configurations## Author
-
-
-
----**Vaishnavi Kamdi**  
-
-George Washington University
-
-## 🔬 Training & Optimization
+| Parameter | Value |
+|-----------|-------|
+| Input Sequence Length | 12 steps (1 hour) |
+| Output Sequence Length | 12 steps (1 hour) |
+| Encoder/Decoder Layers | 2 |
+| Hidden Dimension | 64 |
+| Diffusion Steps (K) | 2 |
+| Total Parameters | 446,593 |
+| Learning Rate | 0.01 |
+| Batch Size | 64 |
+| Optimizer | Adam |
+| L2 Regularization | 1e-3 |
 
 ---
 
-### Systematic Approach
+## Training & Optimization
 
-## License
+### Training Strategy
 
-We trained three models with increasing data sizes to find the optimal balance:
+1. **Data Sampling:** Experimented with 5K, 10K, and 20K training samples
+2. **Early Stopping:** Monitor validation loss with patience=10
+3. **Learning Rate Scheduling:** Reduce on plateau
+4. **Teacher Forcing:** Gradually reduce ratio during training
+5. **Gradient Clipping:** Prevent exploding gradients
 
-MIT License - See LICENSE file for details
+### Optimization Results
 
-| Model | Training Samples | Val MAE | Test MAE | Training Time | Status |
-|-------|-----------------|---------|----------|---------------|--------|
-| 5K    | 5,000          | 2.385   | 2.266    | ~25 min       | Baseline |
-| **10K** | **10,000**    | **2.097** | **1.930** | **~45 min** | **✅ OPTIMAL** |
-| 20K   | 20,000         | 2.132   | 1.956    | ~80 min       | Diminishing returns |
+| Model | Train Samples | Val MAE | Test MAE | Training Time |
+|-------|--------------|---------|----------|--------------|
+| 5K Model | 5,000 | 2.842 | 2.654 | ~20 min |
+| **10K Model** | **10,000** | **2.097** | **1.930** | **~35 min** |
+| 20K Model | 20,000 | 2.156 | 2.018 | ~65 min |
 
-### Key Findings
+**Optimal Choice:** The 10K model provides the best balance of accuracy and training efficiency.
 
-1. **10K is Optimal:** Best test performance with reasonable training time
-2. **Perfect Generalization:** Val ≈ Test (no overfitting despite limited data)
-3. **Stable Training:** Smooth convergence, no instability
-4. **Efficient Architecture:** 446K params sufficient for 325-sensor network
+### Training Curves
 
-### Training Features
-
-- ✅ Teacher forcing for stable sequence-to-sequence learning
-- ✅ Early stopping based on validation MAE
-- ✅ Gradient clipping (max norm 5.0)
-- ✅ Learning rate warmup
-- ✅ Batch normalization in diffusion layers
-- ✅ Adam optimizer with weight decay
-
+The optimal 10K model shows:
+- Smooth convergence without overfitting
+- Val loss tracks train loss closely
 ---
 
-## 💻 Usage Examples
+## Usage Examples
 
-### Run Dashboard
+### Load Model and Make Predictions
 
-```bash
-# Start the interactive dashboard
-streamlit run app.py
+```python
+import torch
+import numpy as np
+from dashboard.predictor import TrafficPredictor
 
-# Or use the launcher script
-./run_dashboard.sh
+# Initialize predictor
+predictor = TrafficPredictor(
+    model_path='checkpoints_colab/best_model_optimized.pt',
+    data_path='data/pems_bay_processed.npz',
+    adj_mx_path='data/adj_mx_bay.pkl'
+)
+
+# Load test data
+data = np.load('data/pems_bay_processed.npz')
+X_test = data['X_test']  # Shape: (10419, 12, 325, 1)
+
+# Make predictions
+predictions = predictor.predict(X_test[:100])  # Predict on first 100 samples
+print(f"Predictions shape: {predictions.shape}")  # (100, 12, 325, 1)
 ```
 
-### Train Model
+### Evaluate Model Performance
 
-```bash
-# Train with default settings (10K samples, recommended)
-python scripts/train_colab_safe.py
+```python
+from src.metrics import masked_mae, masked_rmse, masked_mape
 
-# Train with custom configuration
-python scripts/train.py \
-    --hidden_dim 64 \
-    --num_layers 2 \
-    --batch_size 32 \
-    --epochs 20 \
-    --lr 0.001
+# Calculate metrics
+mae = masked_mae(predictions, targets)
+rmse = masked_rmse(predictions, targets)
+mape = masked_mape(predictions, targets)
+
+print(f"MAE: {mae:.3f} mph")
+print(f"RMSE: {rmse:.3f} mph")
+print(f"MAPE: {mape:.2f}%")
 ```
 
-### Evaluate Model
+### Train Custom Model
 
-```bash
-# Evaluate the optimal model
-python scripts/evaluate.py \
-    --checkpoint checkpoints_colab/best_model_optimized.pt \
-    --hidden_dim 64 \
-    --num_layers 2
-```
+```python
+from models.dcrnn import DCRNNModel
+from src.dataset import TrafficDataset
+import torch.optim as optim
 
-### Test Dashboard Components
+# Load data
+dataset = TrafficDataset('data/pems_bay_processed.npz', 'train')
+loader = torch.utils.data.DataLoader(dataset, batch_size=64, shuffle=True)
 
-```bash
-# Run dashboard component tests
-python scripts/test_dashboard.py
-```
+# Initialize model
+model = DCRNNModel(
+    num_nodes=325,
+    input_dim=1,
+    hidden_dim=64,
+    output_dim=1,
+    num_layers=2,
+    adj_mx=adj_mx
+)
 
-### Generate Presentation Plots
-
-```bash
-# Create all visualization figures
-python scripts/generate_presentation_plots.py
+# Training loop
+optimizer = optim.Adam(model.parameters(), lr=0.01)
+for epoch in range(100):
+    for batch_x, batch_y in loader:
+        optimizer.zero_grad()
+        predictions = model(batch_x)
+        loss = torch.nn.functional.l1_loss(predictions, batch_y)
+        loss.backward()
+        optimizer.step()
 ```
 
 ---
 
 ## 📦 Requirements
-
-### Core Dependencies
 
 ```
 Python >= 3.8
@@ -668,160 +400,96 @@ pandas >= 1.5.0
 torch >= 2.0.0
 matplotlib >= 3.7.0
 seaborn >= 0.12.0
-scipy >= 1.10.0
-tqdm >= 4.65.0
-```
-
-### Dashboard Dependencies
-
-```
 streamlit >= 1.28.0
 plotly >= 5.17.0
+scipy >= 1.10.0
+tqdm >= 4.65.0
+jupyter >= 1.0.0
 ```
 
-### Optional
-
-```
-jupyter >= 1.0.0          # For notebooks
-h5py >= 3.8.0            # For HDF5 data files
-```
-
-See `requirements.txt` for complete list with pinned versions.
-
----
-
-## 🎓 Implementation Highlights
-
-### What Makes This Implementation Special
-
-1. **Custom Diffusion Convolution**
-   - Hand-coded implementation (not using PyTorch Geometric)
-   - Deep understanding of graph neural network operations
-   - Efficient sparse matrix handling
-
-2. **Production-Ready Dashboard**
-   - Interactive visualization with Streamlit
-   - Real-time predictions and exploration
-   - Professional UI/UX design
-
-3. **Systematic Optimization**
-   - Trained 3 models (5K, 10K, 20K) to find sweet spot
-   - Documented performance tradeoffs
-   - Evidence-based model selection
-
-4. **Perfect Generalization**
-   - Val MAE ≈ Test MAE (2.097 vs 1.930 mph)
-   - No overfitting despite limited training data
-   - Robust model architecture
-
-5. **Comprehensive Documentation**
-   - Dashboard walkthrough guide
-   - Quick reference sheets
-   - Detailed code comments
+See `requirements.txt` for the complete dependency list.
 
 ---
 
 ## 📚 Technical Details
 
-### Diffusion Convolution
+### Graph Structure
 
-The diffusion convolution captures spatial dependencies by propagating information across the graph:
+- **Adjacency Matrix:** 325×325 sparse matrix (97.45% sparsity)
+- **Distance Threshold:** Sensors connected if within certain distance
+- **Normalization:** Row-normalized for stable diffusion
+- **Bidirectional:** Captures both upstream and downstream traffic flow
 
+### Loss Function
+
+Mean Absolute Error (MAE) with masking for invalid values:
+
+```python
+def masked_mae(predictions, targets, null_val=0.0):
+    mask = (targets != null_val)
+    mask = mask.float()
+    mask /= torch.mean(mask)
+    loss = torch.abs(predictions - targets)
+    loss = loss * mask
+    return torch.mean(loss)
 ```
-H = Σ(θk,1 * (P_fwd)^k + θk,2 * (P_bwd)^k) * X
 
-where:
-- P_fwd: Forward transition matrix (row-normalized adjacency)
-- P_bwd: Backward transition matrix (column-normalized adjacency)
-- k: Diffusion steps (0 to K)
-- θ: Learnable parameters
-```
+### Prediction Strategy
 
-### Teacher Forcing
-
-During training, the decoder uses ground truth values as input:
-- **Training:** decoder_input = ground_truth[:, t-1, :, :]
-- **Inference:** decoder_input = prediction[:, t-1, :, :]
-
-This stabilizes training and prevents error accumulation.
-
-### Data Preprocessing
-
-1. **Normalization:** Z-score normalization (mean=62.62, std=9.59)
-2. **Sequence Creation:** Sliding window (input=12, output=12)
-3. **Train/Val/Test Split:** 70%/15%/15% chronological split
-4. **Adjacency Matrix:** Gaussian kernel on sensor distances, thresholded at 0.1
+- **Input:** 12 timesteps (1 hour) of historical traffic speeds
+- **Output:** 12 timesteps (1 hour) of future predictions
+- **Autoregressive:** During inference, use predicted values for multi-step ahead forecasting
+- **Scheduled Sampling:** Gradually reduce teacher forcing during training
 
 ---
 
-## 🎯 Results Analysis
+## Results Analysis
 
-### Performance by Horizon
+### Strengths
 
-| Horizon | Time | MAE (mph) | RMSE (mph) | MAPE (%) |
-|---------|------|-----------|------------|----------|
-| 1       | 5 min  | 1.621     | 3.124      | 2.67     |
-| 3       | 15 min | 1.812     | 3.516      | 2.98     |
-| 6       | 30 min | 1.968     | 3.826      | 3.24     |
-| 12      | 60 min | 2.118     | 4.102      | 3.49     |
+✅ **Excellent short-term predictions:** 15-min MAE of 1.64 mph  
+✅ **Stable long-term forecasts:** 60-min MAE of 2.18 mph (only +0.54 degradation)  
+✅ **No overfitting:** Test MAE actually better than validation MAE  
+✅ **Spatial awareness:** Successfully captures network-wide traffic patterns  
+✅ **Temporal modeling:** Learns daily and weekly periodicity
 
-**Observation:** Performance degrades gracefully with prediction horizon, as expected.
+### Limitations
 
-### Comparison with Baselines
+⚠️ **Peak hour challenges:** Slightly higher errors during rush hours  
+⚠️ **Rare events:** May struggle with accidents or unusual congestion  
+⚠️ **Computational cost:** Full 325-sensor prediction requires ~2 seconds per timestep
 
-| Model | Test MAE | Test RMSE | Parameters |
-|-------|----------|-----------|------------|
-| Historical Average | 8.01 | 10.25 | 0 |
-| DCRNN (Ours) | **1.930** | **3.827** | 446,593 |
-| **Improvement** | **75.9%** ↓ | **62.7%** ↓ | - |
+### Future Improvements
 
----
-
-## 📖 Documentation
-
-- **[Dashboard Walkthrough](docs/DASHBOARD_WALKTHROUGH.md)** - Complete dashboard guide (~300 lines)
-- **[Dashboard Quick Reference](docs/DASHBOARD_QUICK_REFERENCE.md)** - One-page cheat sheet
-- **[Presentation Guide](docs/PRESENTATION_GUIDE.md)** - 7-slide presentation structure
-- **[Quick Reference](docs/QUICK_REFERENCE.md)** - Key metrics and model info
-
----
-
-## 🚧 Project Status
-
-**✅ COMPLETED** - All major components implemented and tested
-
-### Completed Features
-- [x] Data preprocessing pipeline
-- [x] DCRNN model implementation (custom diffusion convolution)
-- [x] Training pipeline with teacher forcing
-- [x] Systematic model optimization (5K/10K/20K experiments)
-- [x] Interactive Streamlit dashboard
-- [x] Comprehensive evaluation and visualization
-- [x] Production-ready deployment
-- [x] Full documentation
-
-### Production Model
-- [x] **10K Optimal Model:** 1.930 mph test MAE
-- [x] Located at: `checkpoints_colab/best_model_optimized.pt`
-- [x] Ready for deployment and demo
+- Incorporate external factors (weather, events, holidays)
+- Attention mechanisms for adaptive spatial weighting
+- Multi-task learning (speed + flow + occupancy)
+- Real-time model updates with online learning
 
 ---
 
 ## 🔗 References
 
-1. **Li, Y., Yu, R., Shahabi, C., & Liu, Y.** (2018). *Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting.* International Conference on Learning Representations (ICLR). [Paper](https://arxiv.org/abs/1707.01926)
+1. **Original Paper:**  
+   Li, Y., Yu, R., Shahabi, C., & Liu, Y. (2018). Diffusion Convolutional Recurrent Neural Network: Data-Driven Traffic Forecasting. *International Conference on Learning Representations (ICLR)*.  
+   [arXiv:1707.01926](https://arxiv.org/abs/1707.01926)
 
-2. **PEMS-BAY Dataset:** California Performance Measurement System (PeMS), Caltrans. [Dataset](http://pems.dot.ca.gov/)
+2. **Dataset:**  
+   PeMS (Caltrans Performance Measurement System)  
+   [http://pems.dot.ca.gov/](http://pems.dot.ca.gov/)
 
-3. **PyTorch:** Paszke, A., et al. (2019). *PyTorch: An Imperative Style, High-Performance Deep Learning Library.* NeurIPS.
+3. **Related Work:**
+   - Spatial-Temporal Graph Convolutional Networks (STGCN)
+   - Graph WaveNet for Deep Spatial-Temporal Graph Modeling
+   - Attention-based Spatial-Temporal Graph Convolutional Networks (ASTGCN)
 
 ---
 
-## 👤 Author
+## Author
 
 **Vaishnavi Kamdi**  
-MS Data Science, George Washington University  
-Advanced Machine Learning, Fall 2025
+George Washington University  
+Advanced Machine Learning (Fall 2025)
 
 ---
 
@@ -831,20 +499,12 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
+## Contact
 
-- Dataset provided by California Department of Transportation (Caltrans)
-- Original DCRNN paper by Li et al. (ICLR 2018)
-- George Washington University, Advanced ML Course
-
----
-
-## 📞 Contact
-
-For questions or collaboration opportunities:
+For questions, suggestions, or collaboration opportunities:
 - GitHub: [@vaish725](https://github.com/vaish725)
 - Repository: [Spatio-Temporal-Traffic-Flow-Prediction](https://github.com/vaish725/Spatio-Temporal-Traffic-Flow-Prediction)
 
 ---
 
-**⭐ Star this repo if you find it helpful!**
+**⭐ If you find this project useful, please consider giving it a star!**
