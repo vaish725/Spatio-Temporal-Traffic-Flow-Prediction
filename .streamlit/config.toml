@@ -1,0 +1,13 @@
+# Streamlit Configuration for Traffic Flow Prediction Dashboard
+
+[theme]
+# Theme is set to auto-detect based on system preference
+# Users can toggle between light/dark in the Streamlit menu (⋮)
+base = "light"  # Default fallback
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+runOnSave = true

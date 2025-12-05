@@ -49,7 +49,6 @@ This repository implements a state-of-the-art deep learning model for multi-hori
 │   ├── presentation_structure.md
 │   └── *.png             # Generated visualization images
 │
-├── traffic_flow_setup.py  # Data preprocessing pipeline
 ├── requirements.txt       # Python dependencies
 └── README.md             # This file
 ```
@@ -77,7 +76,7 @@ Place the following datasets in the `data/` folder:
 
 Run the preprocessing pipeline:
 ```bash
-python traffic_flow_setup.py
+python scripts/prepare_data.py
 ```
 
 ### 3. Exploratory Data Analysis
