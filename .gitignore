@@ -32,7 +32,3 @@ data/*.csv
 .DS_Store
 Thumbs.db
 
-# Docs
-*.docx
-*.pdf
-*.pptx
